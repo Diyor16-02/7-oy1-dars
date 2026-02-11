@@ -1,82 +1,73 @@
-import { useState } from "react";
+import { useState, type SubmitEvent } from "react"
+import { AuthFormItem, Button, ChangeAuthPage, PATH, SiteLogo } from "../../components"
+import axios from "axios"
+import toast, { Toaster } from "react-hot-toast"
+import { useNavigate } from "react-router-dom"
+import { LoadingWhite } from "../../assets/images"
 
 const Register = () => {
-  const [form, setForm] = useState({
-    firstname: "",
-    lastname: "",
-    email: "",
-    password: "",
-  });
+  const navigate = useNavigate()
+  const [loading, setLoading] = useState<boolean>(false)
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
-  };
+  function handleRegisterSubmit(evt: SubmitEvent<HTMLFormElement>) {
+    setLoading(true)
+    evt.preventDefault()
+    const data = {
+      email: evt.target.email.value,
+      password: evt.target.password.value,
+      name: `${evt.target.firstname.value} ${evt.target.lastname.value}`,
+      role: "admin",
+      avatar: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTxTboMCCLwwUO0gpKUqPvuKApa1AsN2FRUyw&s",
+    }
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-
-    console.log(form);
-  };
+    axios.post("https://api.escuelajs.co/api/v1/users/", data).then(res => {
+      toast.success(`Muvaffaqiyatli ${res.data.name} qo'shildi`)
+      setTimeout(() => {
+        navigate(PATH.home)
+      }, 1500)
+    }).catch(() => toast.error("Xatolik bor!")).finally(() => setLoading(false))
+  }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-500 to-purple-600">
-      <form
-        onSubmit={handleSubmit}
-        className="w-[360px] bg-white p-6 rounded-xl shadow-lg space-y-4"
-      >
-        <h2 className="text-2xl font-semibold text-center text-gray-800">
-          Register
-        </h2>
+    <div className="min-h-screen bg-linear-to-br from-slate-950 via-slate-900 to-indigo-950 text-slate-100">
+      <Toaster position="top-center" reverseOrder={false} />
+      <div className="mx-auto flex min-h-screen max-w-6xl items-center justify-center px-4">
+        <div className="w-full max-w-md">
+          {/* Header */}
+          <div className="mb-6 text-center">
+            <SiteLogo />
+            <h1 className="text-2xl font-semibold tracking-tight">Ro'yxatdan o'tish</h1>
+          </div>
 
-        <input
-          name="firstname"
-          type="text"
-          placeholder="First name"
-          value={form.firstname}
-          onChange={handleChange}
-          required
-          className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
-        />
+          {/* Card */}
+          <div className="rounded-3xl bg-white/5 p-6 shadow-2xl shadow-black/40 ring-1 ring-white/10 backdrop-blur">
+            <form onSubmit={handleRegisterSubmit} autoComplete="off">
+              <AuthFormItem label="Ism" name="firstname" placeholder="Ism kiriting" type="text" />
+              <AuthFormItem labelClass="mt-4" label="Familiya" name="lastname" placeholder="Familiya kiriting" type="text" />
+              <AuthFormItem labelClass="mt-4" label="Email" name="email" placeholder="example@gmail.com" type="email" />
+              <AuthFormItem labelClass="mt-4" label="Parol" name="password" placeholder="********" type="password" />
+              <Button extraClass="h-[44px] !mt-3 !flex !items-center !justify-center" type="submit">
+                {loading ? (
+                  <img
+                    className="scale-[1.2]"
+                    src={LoadingWhite}
+                    alt="Loading"
+                    width={30}
+                    height={30}
+                  />
+                ) : (
+                  "Hisob yaratish"
+                )}
+              </Button>
+            </form>
+          </div>
 
-        <input
-          name="lastname"
-          type="text"
-          placeholder="Last name"
-          value={form.lastname}
-          onChange={handleChange}
-          required
-          className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
-        />
-
-        <input
-          name="email"
-          type="email"
-          placeholder="Email"
-          value={form.email}
-          onChange={handleChange}
-          required
-          className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
-        />
-
-        <input
-          name="password"
-          type="password"
-          placeholder="Password"
-          value={form.password}
-          onChange={handleChange}
-          required
-          className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
-        />
-
-        <button
-          type="submit"
-          className="w-full py-2 rounded-lg bg-indigo-600 text-white font-medium hover:bg-indigo-700 transition"
-        >
-          Ro‘yxatdan o‘tish
-        </button>
-      </form>
+          {/* Footer */}
+          <ChangeAuthPage title="Tizimga" />
+        </div>
+      </div>
     </div>
-  );
-};
+  )
+}
 
-export default Register;
+export default Register

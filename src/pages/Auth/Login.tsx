@@ -1,52 +1,58 @@
-import { useState } from "react";
+import { useContext, useState, type SubmitEvent } from "react";
+import { AuthFormItem, Button, ChangeAuthPage, SiteLogo } from "../../components";
+import axios from "axios";
+import toast, { Toaster } from "react-hot-toast";
+import { Context } from "../../context/Context";
+import { LoadingWhite } from "../../assets/images";
 
 const Login = () => {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState<boolean>(false)
+  const { setToken } = useContext(Context)
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+  function handleLoginSubmit(evt: SubmitEvent<HTMLFormElement>) {
+    setLoading(true)
+    evt.preventDefault()
+    const data = {
+      email: evt.target.email.value,
+      password: evt.target.password.value
+    }
 
-    console.log({ email, password });
-  };
+    axios.post("https://api.escuelajs.co/api/v1/auth/login", data).then(res => {
+      toast.success("Muvaffaqiyatli kirdingiz")
+      setTimeout(() => {
+        setToken(res.data.access_token)
+      }, 1500)
+    }).catch(() => toast.error("Bunday foydalanuvchi topilmadi!")).finally(() => setLoading(false))
+  }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-500 to-purple-600">
-      <form
-        onSubmit={handleSubmit}
-        className="w-[320px] bg-white p-6 rounded-xl shadow-lg space-y-4"
-      >
-        <h2 className="text-2xl font-semibold text-center text-gray-800">
-          Login
-        </h2>
-
-        <input
-          type="email"
-          placeholder="Email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          required
-          className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
-        />
-
-        <input
-          type="password"
-          placeholder="Password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
-          className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
-        />
-
-        <button
-          type="submit"
-          className="w-full py-2 rounded-lg bg-indigo-600 text-white font-medium hover:bg-indigo-700 transition"
-        >
-          Kirish
-        </button>
-      </form>
+    <div className="min-h-screen bg-linear-to-br from-slate-950 via-slate-900 to-indigo-950 text-slate-100">
+      <Toaster position="top-center" reverseOrder={false} />
+      <div className="mx-auto flex min-h-screen max-w-6xl items-center justify-center px-4">
+        <div className="w-full max-w-md">
+          {/* Header */}
+          <div className="mb-6 text-center">
+            <SiteLogo />
+            <h1 className="text-2xl font-semibold tracking-tight">Xush kelibsiz</h1>
+          </div>
+          {/* Card */}
+          <div className="rounded-3xl bg-white/5 p-6 shadow-2xl shadow-black/40 ring-1 ring-white/10 backdrop-blur">
+            <form onSubmit={handleLoginSubmit} autoComplete="off">
+                <AuthFormItem label="Email" name="email" placeholder="example@gmail.com" type="email" />
+                <AuthFormItem labelClass="mt-4" label="Password" name="password" placeholder="********" type="password" />
+                <Button extraClass="h-[44px] !mt-3 !flex !items-center !justify-center" type="submit">
+                   {loading ? <img className="scale-[1.2]" src={LoadingWhite} alt="Loading" width={30} height={30}/> : "Kirish"}
+                </Button>
+            </form>
+          </div>
+          {/* Footer */}
+          <ChangeAuthPage title="Hisobingiz yo'qmi?" />
+        </div>
+      </div>
     </div>
   );
-};
+}
 
-export default Login;
+export default Login
+
+
